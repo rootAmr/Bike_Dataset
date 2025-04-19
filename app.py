@@ -47,41 +47,57 @@ scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
 st.altair_chart(scatter_chart, use_container_width=True)
 st.success(interpretasi_korelasi)
 
-# Kategorisasi berdasarkan 'workingday' (0 = Libur, 1 = Hari Kerja)
+# Kategorisasi berdasarkan 'workingday' (1 = Hari Kerja, 0 = Hari Libur)
 data_day['day_type'] = data_day['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
 
-# Hitung jumlah & persentase
-jumlah_penyewaan = data_day.groupby('day_type')['total_count'].sum().reset_index()
-jumlah_penyewaan.columns = ['day_type', 'total_count']
-jumlah_penyewaan['persentase'] = (jumlah_penyewaan['total_count'] / jumlah_penyewaan['total_count'].sum()) * 100
+# Hitung jumlah & persentase penyewaan per jenis hari
+jumlah_penyewaan = (
+    data_day.groupby('day_type')['total_count']
+    .sum()
+    .reset_index()
+    .rename(columns={'total_count': 'jumlah_penyewaan'})
+)
+jumlah_penyewaan['persentase'] = (
+    jumlah_penyewaan['jumlah_penyewaan'] / jumlah_penyewaan['jumlah_penyewaan'].sum()
+) * 100
 
+# Subheader
 st.subheader('🚲 Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur (Berdasarkan workingday)')
 
+# Bar chart dengan Altair
 bar_chart = alt.Chart(jumlah_penyewaan).mark_bar().encode(
-    x=alt.X('day_type', title='Jenis Hari'),
-    y=alt.Y('total_count', title='Jumlah Penyewaan'),
-    color=alt.Color('day_type', scale=alt.Scale(domain=['Hari Kerja', 'Hari Libur'], range=['skyblue', 'salmon'])),
-    tooltip=['day_type', 'total_count', alt.Tooltip('persentase', format='.1f')]
+    x=alt.X('day_type:N', title='Jenis Hari'),
+    y=alt.Y('jumlah_penyewaan:Q', title='Jumlah Penyewaan'),
+    color=alt.Color('day_type:N', scale=alt.Scale(domain=['Hari Kerja', 'Hari Libur'], range=['skyblue', 'salmon'])),
+    tooltip=[
+        alt.Tooltip('day_type:N', title='Jenis Hari'),
+        alt.Tooltip('jumlah_penyewaan:Q', title='Jumlah Penyewaan'),
+        alt.Tooltip('persentase:Q', format='.1f', title='Persentase (%)')
+    ]
 ).properties(
     width=600,
     height=400
 )
 
+# Label persentase di atas batang
 text = alt.Chart(jumlah_penyewaan).mark_text(
     align='center',
     baseline='bottom',
     dy=-5,
-    fontWeight='bold'
+    fontWeight='bold',
+    color='black'
 ).encode(
-    x='day_type',
-    y='total_count',
-    text=alt.Text('persentase', format='.1f')
+    x='day_type:N',
+    y='jumlah_penyewaan:Q',
+    text=alt.Text('persentase:Q', format='.1f')
 )
 
+# Tampilkan chart di Streamlit
 st.altair_chart(bar_chart + text, use_container_width=True)
 
+# Tampilkan data dalam format teks
 for _, row in jumlah_penyewaan.iterrows():
-    st.write(f"- **{row['day_type']}**: {row['total_count']} penyewaan ({row['persentase']:.1f}%)")
+    st.write(f"- **{row['day_type']}**: {row['jumlah_penyewaan']} penyewaan ({row['persentase']:.1f}%)")
 
 st.header('📝 Kesimpulan')
 st.markdown(f"""
