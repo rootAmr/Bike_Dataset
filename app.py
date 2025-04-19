@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Load data
 data_url = "https://raw.githubusercontent.com/rootAmr/Bike_Dataset/refs/heads/main/data_day_clean.csv"
@@ -60,7 +60,6 @@ st.success(interpretasi_korelasi)
 # Persentase Penyewaan
 # ========================
 
-# Kategorisasi berdasarkan 'workingday' (1 = Hari Kerja, 0 = Hari Libur)
 data_day['day_type'] = data_day['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
 
 # Hitung jumlah dan persentase penyewaan per jenis hari
@@ -77,22 +76,22 @@ jumlah_penyewaan['persentase'] = (
 # Subheader
 st.subheader('🚲 Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur (Berdasarkan workingday)')
 
-# Membuat bar chart menggunakan Matplotlib
-fig, ax = plt.subplots(figsize=(8, 6))
-bars = ax.bar(jumlah_penyewaan['day_type'], jumlah_penyewaan['jumlah_penyewaan'], color=['skyblue', 'salmon'])
+# Membuat bar plot menggunakan Seaborn
+plt.figure(figsize=(8, 6))
+sns.barplot(x='day_type', y='jumlah_penyewaan', data=jumlah_penyewaan, palette=['skyblue', 'salmon'])
 
 # Menambahkan label persentase di atas batang
-for bar, persentase in zip(bars, jumlah_penyewaan['persentase']):
-    height = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width() / 2, height + 10, f'{persentase:.1f}%', ha='center', va='bottom', fontweight='bold')
+for index, row in jumlah_penyewaan.iterrows():
+    plt.text(index, row['jumlah_penyewaan'] + 10, f'{row["persentase"]:.1f}%', 
+             ha='center', va='bottom', fontweight='bold')
 
 # Memberikan judul dan label sumbu
-ax.set_title('Jumlah Penyewaan Sepeda Berdasarkan Jenis Hari', fontsize=16)
-ax.set_xlabel('Jenis Hari', fontsize=12)
-ax.set_ylabel('Jumlah Penyewaan', fontsize=12)
+plt.title('Jumlah Penyewaan Sepeda Berdasarkan Jenis Hari', fontsize=16)
+plt.xlabel('Jenis Hari', fontsize=12)
+plt.ylabel('Jumlah Penyewaan', fontsize=12)
 
-# Menampilkan chart
-st.pyplot(fig)
+# Menampilkan chart di Streamlit
+st.pyplot(plt)
 
 # Menampilkan data dalam format teks
 for _, row in jumlah_penyewaan.iterrows():
