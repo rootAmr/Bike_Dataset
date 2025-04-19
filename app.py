@@ -21,19 +21,24 @@ data_day['jenis_hari'] = data_day['weekday'].apply(kategorikan_hari)
 
 st.title('📊 Analisis Penyewaan Sepeda Harian (Tanpa Filter)')
 
+# Menampilkan data dalam bentuk tabel
 with st.expander("🔍 Lihat Data"):
     st.dataframe(data_day)
 
 # Korelasi suhu dan penyewaan
 st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda')
 
+# Menghitung korelasi antara suhu dan jumlah penyewaan
 korelasi = data_day['temp'].corr(data_day['total_count'])
+
+# Interpretasi korelasi
 interpretasi_korelasi = (
     "Terdapat korelasi positif antara suhu dan jumlah total penyewaan sepeda." if korelasi > 0 else
     "Terdapat korelasi negatif antara suhu dan jumlah total penyewaan sepeda." if korelasi < 0 else
     "Tidak ada hubungan linear yang signifikan antara suhu dan jumlah total penyewaan sepeda."
 )
 
+# Membuat scatter chart untuk korelasi
 scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
     x=alt.X('temp', title='Suhu (°C)'),
     y=alt.Y('total_count', title='Jumlah Penyewaan'),
@@ -44,13 +49,20 @@ scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
     height=400
 )
 
+# Menampilkan chart
 st.altair_chart(scatter_chart, use_container_width=True)
+
+# Menampilkan interpretasi korelasi
 st.success(interpretasi_korelasi)
+
+# ========================
+# Persentase Penyewaan
+# ========================
 
 # Kategorisasi berdasarkan 'workingday' (1 = Hari Kerja, 0 = Hari Libur)
 data_day['day_type'] = data_day['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
 
-# Hitung jumlah & persentase penyewaan per jenis hari
+# Hitung jumlah dan persentase penyewaan per jenis hari
 jumlah_penyewaan = (
     data_day.groupby('day_type')['total_count']
     .sum()
@@ -95,11 +107,17 @@ text = alt.Chart(jumlah_penyewaan).mark_text(
 # Tampilkan chart di Streamlit
 st.altair_chart(bar_chart + text, use_container_width=True)
 
-# Tampilkan data dalam format teks
+# Menampilkan data dalam format teks
 for _, row in jumlah_penyewaan.iterrows():
     st.write(f"- **{row['day_type']}**: {row['jumlah_penyewaan']} penyewaan ({row['persentase']:.1f}%)")
 
+# ========================
+# Kesimpulan
+# ========================
+
 st.header('📝 Kesimpulan')
+
+# Menyusun kesimpulan analisis
 st.markdown(f"""
 - 📅 Analisis dilakukan pada seluruh rentang data yang tersedia.
 - 📈 **Suhu** menunjukkan hubungan {'positif' if korelasi > 0 else 'negatif' if korelasi < 0 else 'tidak signifikan'} dengan jumlah penyewaan sepeda.
