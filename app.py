@@ -47,7 +47,7 @@ start_date, end_date = st.sidebar.date_input(
 filtered_data = data_day[
     (data_day['tanggal'] >= pd.to_datetime(start_date)) &
     (data_day['tanggal'] <= pd.to_datetime(end_date)) &
-    (data_day['season'] == selected_season)
+    (data_day['musim'] == selected_season)
 ]
 
 # ======================
