@@ -6,28 +6,56 @@ import altair as alt
 data_url = "https://raw.githubusercontent.com/rootAmr/Bike_Dataset/refs/heads/main/data_day_clean.csv"
 data_day = pd.read_csv(data_url)
 
+# Konversi kolom 'dteday' ke datetime
+data_day['dteday'] = pd.to_datetime(data_day['dteday'])
+
 # Kategorisasi hari
 def kategorikan_hari(hari):
     return 'Akhir Pekan/Libur' if hari in ['Sabtu', 'Minggu'] else 'Hari Kerja'
 
 data_day['jenis_hari'] = data_day['weekday'].apply(kategorikan_hari)
 
+# ======================
+# 🔧 Fitur Interaktif
+# ======================
+
+# Filter musim
+season_options = {
+    1: 'Musim Semi',
+    2: 'Musim Panas',
+    3: 'Musim Gugur',
+    4: 'Musim Dingin'
+}
+selected_season = st.selectbox("🗓️ Pilih Musim", options=list(season_options.keys()), format_func=lambda x: season_options[x])
+
+# Filter tanggal
+min_date = data_day['dteday'].min()
+max_date = data_day['dteday'].max()
+start_date, end_date = st.date_input("📆 Pilih Rentang Tanggal", [min_date, max_date])
+
+# Terapkan filter ke data
+filtered_data = data_day[
+    (data_day['season'] == selected_season) &
+    (data_day['dteday'] >= pd.to_datetime(start_date)) &
+    (data_day['dteday'] <= pd.to_datetime(end_date))
+]
+
+# ======================
+# 🔎 Analisis & Visualisasi
+# ======================
+
+st.title('📊 Analisis Penyewaan Sepeda Harian (Dengan Filter Interaktif)')
+
+with st.expander("🔍 Lihat Data Terfilter"):
+    st.dataframe(filtered_data)
+
 # Hitung jumlah & persentase penyewaan per jenis hari
-jumlah_penyewaan = data_day.groupby('jenis_hari')['total_count'].sum().reset_index()
+jumlah_penyewaan = filtered_data.groupby('jenis_hari')['total_count'].sum().reset_index()
 jumlah_penyewaan.columns = ['jenis_hari', 'total_count']
 jumlah_penyewaan['persentase'] = (jumlah_penyewaan['total_count'] / jumlah_penyewaan['total_count'].sum()) * 100
 
-# Judul utama
-st.title('📊 Analisis Penyewaan Sepeda Harian')
+st.subheader('🚲 Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur')
 
-# Tampilkan data mentah
-with st.expander("🔍 Lihat Data Mentah"):
-    st.dataframe(data_day)
-
-# Subjudul persentase penyewaan
-st.subheader('🚲 Persentase Penyewaan Sepeda pada Hari Kerja vs Hari Libur')
-
-# Visualisasi menggunakan Altair
 bar_chart = alt.Chart(jumlah_penyewaan).mark_bar(color='skyblue').encode(
     x=alt.X('jenis_hari', title='Jenis Hari'),
     y=alt.Y('total_count', title='Jumlah Penyewaan'),
@@ -37,7 +65,6 @@ bar_chart = alt.Chart(jumlah_penyewaan).mark_bar(color='skyblue').encode(
     height=400
 )
 
-# Tambahkan label persentase di atas bar
 text = alt.Chart(jumlah_penyewaan).mark_text(
     align='center',
     baseline='bottom',
@@ -51,22 +78,20 @@ text = alt.Chart(jumlah_penyewaan).mark_text(
 
 st.altair_chart(bar_chart + text, use_container_width=True)
 
-# Info numerik
 for _, row in jumlah_penyewaan.iterrows():
     st.write(f"- **{row['jenis_hari']}**: {row['total_count']} penyewaan ({row['persentase']:.1f}%)")
 
 # Korelasi suhu dan penyewaan
-st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda')
+st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda (Terfilter)')
 
-korelasi = data_day['temp'].corr(data_day['total_count'])
+korelasi = filtered_data['temp'].corr(filtered_data['total_count'])
 interpretasi_korelasi = (
     "Terdapat korelasi positif antara suhu dan jumlah total penyewaan sepeda." if korelasi > 0 else
     "Terdapat korelasi negatif antara suhu dan jumlah total penyewaan sepeda." if korelasi < 0 else
     "Tidak ada hubungan linear yang signifikan antara suhu dan jumlah total penyewaan sepeda."
 )
 
-# Scatter plot korelasi
-scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
+scatter_chart = alt.Chart(filtered_data).mark_circle(color='orange').encode(
     x=alt.X('temp', title='Suhu (°C)'),
     y=alt.Y('total_count', title='Jumlah Penyewaan'),
     tooltip=['temp', 'total_count']
@@ -79,10 +104,9 @@ scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
 st.altair_chart(scatter_chart, use_container_width=True)
 st.success(interpretasi_korelasi)
 
-# Kesimpulan akhir
 st.header('📝 Kesimpulan')
-st.markdown("""
-- 📈 **Suhu** memiliki hubungan positif dengan jumlah penyewaan sepeda.
-- 🧑‍💼 Penyewaan sepeda **lebih banyak terjadi di hari kerja** dibanding akhir pekan/libur.
-- 🔧 Wawasan ini dapat membantu pengelola dalam perencanaan operasional dan strategi pemasaran yang tepat sasaran.
+st.markdown(f"""
+- 📅 Data dianalisis pada musim **{season_options[selected_season]}** antara tanggal **{start_date}** hingga **{end_date}**.
+- 📈 **Suhu** tetap menunjukkan hubungan {'positif' if korelasi > 0 else 'negatif' if korelasi < 0 else 'tidak signifikan'} dengan penyewaan.
+- 🔍 Interaktif ini memungkinkan eksplorasi data yang lebih fleksibel oleh pengguna.
 """)
