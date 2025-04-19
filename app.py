@@ -16,51 +16,16 @@ def kategorikan_hari(hari):
 data_day['jenis_hari'] = data_day['weekday'].apply(kategorikan_hari)
 
 # ======================
-# 🔧 Fitur Interaktif
-# ======================
-
-# Filter musim
-season_options = {
-    1: 'Musim Semi',
-    2: 'Musim Panas',
-    3: 'Musim Gugur',
-    4: 'Musim Dingin'
-}
-selected_season = st.selectbox("🗓️ Pilih Musim", options=list(season_options.keys()), format_func=lambda x: season_options[x])
-
-# Konversi kolom 'tanggal' menjadi datetime
-data_day['tanggal'] = pd.to_datetime(data_day['tanggal'])
-
-# Sidebar: Pilih rentang tanggal
-st.sidebar.header("🗓️ Filter Berdasarkan Tanggal")
-min_tanggal = data_day['tanggal'].min()
-max_tanggal = data_day['tanggal'].max()
-
-start_date, end_date = st.sidebar.date_input(
-    "Pilih Rentang Tanggal:",
-    value=[min_tanggal, max_tanggal],
-    min_value=min_tanggal,
-    max_value=max_tanggal
-)
-
-# Filter data berdasarkan tanggal dan musim
-filtered_data = data_day[
-    (data_day['tanggal'] >= pd.to_datetime(start_date)) &
-    (data_day['tanggal'] <= pd.to_datetime(end_date)) &
-    (data_day['musim'] == selected_season)
-]
-
-# ======================
 # 🔎 Analisis & Visualisasi
 # ======================
 
-st.title('📊 Analisis Penyewaan Sepeda Harian (Dengan Filter Interaktif)')
+st.title('📊 Analisis Penyewaan Sepeda Harian (Tanpa Filter)')
 
-with st.expander("🔍 Lihat Data Terfilter"):
-    st.dataframe(filtered_data)
+with st.expander("🔍 Lihat Data"):
+    st.dataframe(data_day)
 
 # Hitung jumlah & persentase penyewaan per jenis hari
-jumlah_penyewaan = filtered_data.groupby('jenis_hari')['total_count'].sum().reset_index()
+jumlah_penyewaan = data_day.groupby('jenis_hari')['total_count'].sum().reset_index()
 jumlah_penyewaan.columns = ['jenis_hari', 'total_count']
 jumlah_penyewaan['persentase'] = (jumlah_penyewaan['total_count'] / jumlah_penyewaan['total_count'].sum()) * 100
 
@@ -92,16 +57,16 @@ for _, row in jumlah_penyewaan.iterrows():
     st.write(f"- **{row['jenis_hari']}**: {row['total_count']} penyewaan ({row['persentase']:.1f}%)")
 
 # Korelasi suhu dan penyewaan
-st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda (Terfilter)')
+st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda')
 
-korelasi = filtered_data['temp'].corr(filtered_data['total_count'])
+korelasi = data_day['temp'].corr(data_day['total_count'])
 interpretasi_korelasi = (
     "Terdapat korelasi positif antara suhu dan jumlah total penyewaan sepeda." if korelasi > 0 else
     "Terdapat korelasi negatif antara suhu dan jumlah total penyewaan sepeda." if korelasi < 0 else
     "Tidak ada hubungan linear yang signifikan antara suhu dan jumlah total penyewaan sepeda."
 )
 
-scatter_chart = alt.Chart(filtered_data).mark_circle(color='orange').encode(
+scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
     x=alt.X('temp', title='Suhu (°C)'),
     y=alt.Y('total_count', title='Jumlah Penyewaan'),
     tooltip=['temp', 'total_count']
@@ -116,7 +81,7 @@ st.success(interpretasi_korelasi)
 
 st.header('📝 Kesimpulan')
 st.markdown(f"""
-- 📅 Data dianalisis pada musim **{season_options[selected_season]}** antara tanggal **{start_date}** hingga **{end_date}**.
-- 📈 **Suhu** tetap menunjukkan hubungan {'positif' if korelasi > 0 else 'negatif' if korelasi < 0 else 'tidak signifikan'} dengan penyewaan.
-- 🔍 Interaktif ini memungkinkan eksplorasi data yang lebih fleksibel oleh pengguna.
+- 📅 Analisis dilakukan pada seluruh rentang data yang tersedia.
+- 📈 **Suhu** menunjukkan hubungan {'positif' if korelasi > 0 else 'negatif' if korelasi < 0 else 'tidak signifikan'} dengan jumlah penyewaan sepeda.
+- 🔍 Analisis ini memberikan gambaran umum pola penyewaan sepeda berdasarkan hari dan suhu.
 """)
