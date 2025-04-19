@@ -76,36 +76,22 @@ jumlah_penyewaan['persentase'] = (
 # Subheader
 st.subheader('🚲 Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur (Berdasarkan workingday)')
 
-# Bar chart dengan Altair
-bar_chart = alt.Chart(jumlah_penyewaan).mark_bar().encode(
-    x=alt.X('day_type:N', title='Jenis Hari'),
-    y=alt.Y('jumlah_penyewaan:Q', title='Jumlah Penyewaan'),
-    color=alt.Color('day_type:N', scale=alt.Scale(domain=['Hari Kerja', 'Hari Libur'], range=['skyblue', 'salmon'])),
-    tooltip=[
-        alt.Tooltip('day_type:N', title='Jenis Hari'),
-        alt.Tooltip('jumlah_penyewaan:Q', title='Jumlah Penyewaan'),
-        alt.Tooltip('persentase:Q', format='.1f', title='Persentase (%)')
-    ]
-).properties(
-    width=600,
-    height=400
-)
+# Membuat bar chart menggunakan Matplotlib
+fig, ax = plt.subplots(figsize=(8, 6))
+bars = ax.bar(jumlah_penyewaan['day_type'], jumlah_penyewaan['jumlah_penyewaan'], color=['skyblue', 'salmon'])
 
-# Label persentase di atas batang
-text = alt.Chart(jumlah_penyewaan).mark_text(
-    align='center',
-    baseline='bottom',
-    dy=-5,
-    fontWeight='bold',
-    color='black'
-).encode(
-    x='day_type:N',
-    y='jumlah_penyewaan:Q',
-    text=alt.Text('persentase:Q', format='.1f')
-)
+# Menambahkan label persentase di atas batang
+for bar, persentase in zip(bars, jumlah_penyewaan['persentase']):
+    height = bar.get_height()
+    ax.text(bar.get_x() + bar.get_width() / 2, height + 10, f'{persentase:.1f}%', ha='center', va='bottom', fontweight='bold')
 
-# Tampilkan chart di Streamlit
-st.altair_chart(bar_chart + text, use_container_width=True)
+# Memberikan judul dan label sumbu
+ax.set_title('Jumlah Penyewaan Sepeda Berdasarkan Jenis Hari', fontsize=16)
+ax.set_xlabel('Jenis Hari', fontsize=12)
+ax.set_ylabel('Jumlah Penyewaan', fontsize=12)
+
+# Menampilkan chart
+st.pyplot(fig)
 
 # Menampilkan data dalam format teks
 for _, row in jumlah_penyewaan.iterrows():
