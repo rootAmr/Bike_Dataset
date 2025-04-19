@@ -60,6 +60,8 @@ st.success(interpretasi_korelasi)
 # Persentase Penyewaan
 # ========================
 
+
+# Kategorisasi berdasarkan 'workingday' (1 = Hari Kerja, 0 = Hari Libur)
 data_day['day_type'] = data_day['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
 
 # Hitung jumlah dan persentase penyewaan per jenis hari
@@ -77,21 +79,20 @@ jumlah_penyewaan['persentase'] = (
 st.subheader('🚲 Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur (Berdasarkan workingday)')
 
 # Membuat bar plot menggunakan Seaborn
-plt.figure(figsize=(8, 6))
-sns.barplot(x='day_type', y='jumlah_penyewaan', data=jumlah_penyewaan, palette=['skyblue', 'salmon'])
+bar_plot = sns.barplot(x='day_type', y='jumlah_penyewaan', data=jumlah_penyewaan, palette=['skyblue', 'salmon'])
 
 # Menambahkan label persentase di atas batang
 for index, row in jumlah_penyewaan.iterrows():
-    plt.text(index, row['jumlah_penyewaan'] + 10, f'{row["persentase"]:.1f}%', 
-             ha='center', va='bottom', fontweight='bold')
+    bar_plot.text(index, row['jumlah_penyewaan'] + 10, f'{row["persentase"]:.1f}%', 
+                  ha='center', va='bottom', fontweight='bold')
 
 # Memberikan judul dan label sumbu
-plt.title('Jumlah Penyewaan Sepeda Berdasarkan Jenis Hari', fontsize=16)
-plt.xlabel('Jenis Hari', fontsize=12)
-plt.ylabel('Jumlah Penyewaan', fontsize=12)
+bar_plot.set_title('Jumlah Penyewaan Sepeda Berdasarkan Jenis Hari', fontsize=16)
+bar_plot.set_xlabel('Jenis Hari', fontsize=12)
+bar_plot.set_ylabel('Jumlah Penyewaan', fontsize=12)
 
 # Menampilkan chart di Streamlit
-st.pyplot(plt)
+st.pyplot(bar_plot.figure)
 
 # Menampilkan data dalam format teks
 for _, row in jumlah_penyewaan.iterrows():
