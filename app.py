@@ -28,14 +28,23 @@ season_options = {
 }
 selected_season = st.selectbox("🗓️ Pilih Musim", options=list(season_options.keys()), format_func=lambda x: season_options[x])
 
-# Filter tanggal
+# Konversi dteday ke datetime
+data_day['dteday'] = pd.to_datetime(data_day['dteday'])
+
+# Tambahkan filter tanggal
+st.sidebar.header("🗓️ Filter Tanggal")
 min_date = data_day['dteday'].min()
 max_date = data_day['dteday'].max()
-start_date, end_date = st.date_input("📆 Pilih Rentang Tanggal", [min_date, max_date])
 
-# Terapkan filter ke data
+start_date, end_date = st.sidebar.date_input(
+    "Pilih Rentang Tanggal",
+    [min_date, max_date],
+    min_value=min_date,
+    max_value=max_date
+)
+
+# Filter data sesuai rentang tanggal yang dipilih
 filtered_data = data_day[
-    (data_day['season'] == selected_season) &
     (data_day['dteday'] >= pd.to_datetime(start_date)) &
     (data_day['dteday'] <= pd.to_datetime(end_date))
 ]
