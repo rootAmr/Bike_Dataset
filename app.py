@@ -43,10 +43,11 @@ start_date, end_date = st.sidebar.date_input(
     max_value=max_tanggal
 )
 
-# Filter data berdasarkan tanggal yang dipilih
+# Filter data berdasarkan tanggal dan musim
 filtered_data = data_day[
     (data_day['tanggal'] >= pd.to_datetime(start_date)) &
-    (data_day['tanggal'] <= pd.to_datetime(end_date))
+    (data_day['tanggal'] <= pd.to_datetime(end_date)) &
+    (data_day['season'] == selected_season)
 ]
 
 # ======================
