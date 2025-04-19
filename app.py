@@ -6,8 +6,8 @@ import altair as alt
 data_url = "https://raw.githubusercontent.com/rootAmr/Bike_Dataset/refs/heads/main/data_day_clean.csv"
 data_day = pd.read_csv(data_url)
 
-# Konversi kolom 'dteday' ke datetime
-data_day['dteday'] = pd.to_datetime(data_day['dteday'])
+# Konversi kolom 'tanggal' ke datetime
+data_day['tanggal'] = pd.to_datetime(data_day['tanggal'])
 
 # Kategorisasi hari
 def kategorikan_hari(hari):
