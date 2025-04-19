@@ -67,6 +67,9 @@ data_day['day_type'] = data_day['workingday'].apply(lambda x: 'Hari Kerja' if x 
 # Hitung total penyewaan per jenis hari
 day_type_rentals = data_day.groupby('day_type')['total_count'].sum()
 
+# Pastikan semua kategori ada dalam perhitungan
+day_type_rentals = day_type_rentals.reindex(['Hari Kerja', 'Hari Libur'], fill_value=0)
+
 # Hitung persentase penyewaan per jenis hari
 day_type_percent = (day_type_rentals / day_type_rentals.sum()) * 100
 
