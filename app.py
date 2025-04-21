@@ -65,49 +65,64 @@ st.success(interpretasi_korelasi)
 # Persentase Penyewaan Hari Kerja vs Hari Libur
 # ========================
 
-st.subheader('🚲 Persentase Penyewaan: Hari Kerja vs Hari Libur')
+st.subheader('🚲 Penyewaan Sepeda: Hari Kerja vs Hari Libur')
 
-# Checkbox untuk filter
+# Checkbox interaktif
 show_workingday = st.checkbox('Tampilkan Hari Kerja', value=True)
 show_holiday = st.checkbox('Tampilkan Hari Libur', value=True)
 
-# Filter data berdasarkan checkbox
+# Filter pilihan
 selected_days = []
 if show_holiday:
     selected_days.append('Hari Libur')
 if show_workingday:
     selected_days.append('Hari Kerja')
 
-# Cek apakah ada data yang dipilih
+# Jika ada pilihan
 if selected_days:
-    filtered_rentals = data_day[data_day['day_type'].isin(selected_days)]
-    
-    # Hitung jumlah penyewaan per jenis hari (urutan: Hari Libur dulu, Hari Kerja)
-    day_type_rentals = filtered_rentals.groupby('day_type')['total_count'].sum().reindex(['Hari Libur', 'Hari Kerja'], fill_value=0)
-    day_type_percent = (day_type_rentals / day_type_rentals.sum()) * 100
+    # Filter data
+    filtered_data = data_day[data_day['day_type'].isin(selected_days)]
+    group_data = filtered_data.groupby('day_type')['total_count'].sum().reindex(['Hari Libur', 'Hari Kerja'], fill_value=0)
 
-    # Visualisasi bar chart
     fig, ax = plt.subplots()
-    colors = ['salmon' if day == 'Hari Libur' else 'skyblue' for day in day_type_percent.index]
-    bars = ax.bar(day_type_percent.index, day_type_percent, color=colors)
 
-    # Label persen
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%', ha='center', fontweight='bold')
+    if len(selected_days) == 2:
+        # Tampilkan dalam bentuk persentase
+        group_percent = (group_data / group_data.sum()) * 100
+        colors = ['salmon', 'skyblue']
+        bars = ax.bar(group_percent.index, group_percent, color=colors)
 
-    # Pengaturan visual
-    ax.set_ylim(0, 100)
-    ax.set_ylabel('Persentase (%)')
-    ax.set_title('Persentase Penyewaan Sepeda: Hari Libur vs Hari Kerja', fontsize=14, fontweight='bold')
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%', ha='center', fontweight='bold')
+
+        ax.set_ylim(0, 100)
+        ax.set_ylabel('Persentase (%)')
+        ax.set_title('Persentase Penyewaan Sepeda: Hari Libur vs Hari Kerja', fontsize=14, fontweight='bold')
+
+        # Tampilkan nilai di bawah chart
+        for day_type, percentage in group_percent.items():
+            st.write(f"- **{day_type}**: {percentage:.1f}%")
+
+    else:
+        # Tampilkan dalam bentuk jumlah total penyewaan
+        colors = ['salmon' if day == 'Hari Libur' else 'skyblue' for day in group_data.index]
+        bars = ax.bar(group_data.index, group_data, color=colors)
+
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, height + 50, f'{height:,}', ha='center', fontweight='bold')
+
+        ax.set_ylabel('Jumlah Penyewaan')
+        ax.set_title('Jumlah Penyewaan Sepeda', fontsize=14, fontweight='bold')
+
+        # Tampilkan nilai di bawah chart
+        for day_type, jumlah in group_data.items():
+            st.write(f"- **{day_type}**: {jumlah:,} penyewaan")
+
     ax.grid(axis='y', linestyle='--', alpha=0.5)
-
-    # Tampilkan chart
     st.pyplot(fig)
 
-    # Tampilkan data dalam format teks
-    for day_type, percentage in day_type_percent.items():
-        st.write(f"- **{day_type}**: {percentage:.1f}%")
 else:
     st.warning('Silakan pilih minimal satu jenis hari untuk ditampilkan.')
 
