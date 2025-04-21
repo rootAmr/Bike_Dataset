@@ -89,7 +89,7 @@ if selected_days:
     if len(selected_days) == 2:
         # Tampilkan dalam bentuk persentase
         group_percent = (group_data / group_data.sum()) * 100
-        colors = ['salmon', 'skyblue']
+        colors = ['skyblue','salmon']
         bars = ax.bar(group_percent.index, group_percent, color=colors)
 
         for bar in bars:
