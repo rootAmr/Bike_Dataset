@@ -16,10 +16,47 @@ data_day['workingday'] = data_day['workingday'].map({'Ya': 1, 'Tidak': 0})
 data_day['holiday'] = data_day['holiday'].map({'Ya': 1, 'Tidak': 0})
 data_day['day_type'] = data_day['day_type'].map({1: 'Hari Libur', 0: 'Hari Kerja'})  # sesuai datamu
 
-# Pastikan kolom kategorikal
+# kolom kategorikal
 kategori_kolom = ['musim', 'bulan', 'holiday', 'weekday', 'cuaca', 'day_type']
 for col in kategori_kolom:
     data_day[col] = data_day[col].astype('category')
+st.subheader("🌦️ Tren Penyewaan Sepeda Berdasarkan Musim")
+
+# Checkbox per musim
+musim_unik = data_day['musim'].unique().tolist()
+musim_dipilih = st.multiselect("Pilih musim untuk ditampilkan:", musim_unik, default=musim_unik)
+
+# Filter data berdasarkan musim yang dipilih
+if musim_dipilih:
+    seasonal_data = data_day[data_day['musim'].isin(musim_dipilih)]
+    
+    # Hitung rata-rata penyewaan per musim
+    seasonal_rentals = (
+        seasonal_data.groupby('musim')['total_count']
+        .mean()
+        .reindex(musim_unik)
+        .dropna()
+    )
+    
+    # Visualisasi
+    fig, ax = plt.subplots(figsize=(8, 5))
+    sns.barplot(x=seasonal_rentals.index, y=seasonal_rentals.values, palette="pastel", ax=ax)
+    ax.set_title('Rata-rata Penyewaan Sepeda per Musim', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Musim')
+    ax.set_ylabel('Rata-rata Jumlah Penyewaan')
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+    # Tambahkan label di atas bar
+    for i, v in enumerate(seasonal_rentals.values):
+        ax.text(i, v + 10, f'{v:.0f}', ha='center', fontweight='bold')
+    
+    st.pyplot(fig)
+
+    # Tampilkan info di bawah grafik
+    for musim, jumlah in seasonal_rentals.items():
+        st.write(f"- **{musim}**: Rata-rata **{jumlah:.0f} penyewaan/hari**")
+else:
+    st.warning("Pilih minimal satu musim untuk melihat grafik.")
 
 # ======================
 # 🔎 Analisis & Visualisasi
