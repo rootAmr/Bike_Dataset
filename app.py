@@ -67,31 +67,49 @@ st.success(interpretasi_korelasi)
 
 st.subheader('🚲 Persentase Penyewaan: Hari Kerja vs Hari Libur')
 
-# Hitung jumlah penyewaan per jenis hari
-day_type_rentals = data_day.groupby('day_type')['total_count'].sum().reindex(['Hari Kerja', 'Hari Libur'], fill_value=0)
-day_type_percent = (day_type_rentals / day_type_rentals.sum()) * 100
+# Checkbox untuk filter
+show_workingday = st.checkbox('Tampilkan Hari Kerja', value=True)
+show_holiday = st.checkbox('Tampilkan Hari Libur', value=True)
 
-# Visualisasi bar chart
-fig, ax = plt.subplots()
-bars = ax.bar(day_type_percent.index, day_type_percent, color=['skyblue', 'salmon'])
+# Filter data berdasarkan checkbox
+selected_days = []
+if show_holiday:
+    selected_days.append('Hari Libur')
+if show_workingday:
+    selected_days.append('Hari Kerja')
 
-# Label persen
-for bar in bars:
-    height = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%', ha='center', fontweight='bold')
+# Cek apakah ada data yang dipilih
+if selected_days:
+    filtered_rentals = data_day[data_day['day_type'].isin(selected_days)]
+    
+    # Hitung jumlah penyewaan per jenis hari (urutan: Hari Libur dulu, Hari Kerja)
+    day_type_rentals = filtered_rentals.groupby('day_type')['total_count'].sum().reindex(['Hari Libur', 'Hari Kerja'], fill_value=0)
+    day_type_percent = (day_type_rentals / day_type_rentals.sum()) * 100
 
-# Tambahan pengaturan visual
-ax.set_ylim(0, 100)
-ax.set_ylabel('Persentase (%)')
-ax.set_title('Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur', fontsize=14, fontweight='bold')
-ax.grid(axis='y', linestyle='--', alpha=0.5)
+    # Visualisasi bar chart
+    fig, ax = plt.subplots()
+    colors = ['salmon' if day == 'Hari Libur' else 'skyblue' for day in day_type_percent.index]
+    bars = ax.bar(day_type_percent.index, day_type_percent, color=colors)
 
-# Tampilkan chart
-st.pyplot(fig)
+    # Label persen
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%', ha='center', fontweight='bold')
 
-# Menampilkan data dalam format teks
-for day_type, percentage in day_type_percent.items():
-    st.write(f"- **{day_type}**: {percentage:.1f}%")
+    # Pengaturan visual
+    ax.set_ylim(0, 100)
+    ax.set_ylabel('Persentase (%)')
+    ax.set_title('Persentase Penyewaan Sepeda: Hari Libur vs Hari Kerja', fontsize=14, fontweight='bold')
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+    # Tampilkan chart
+    st.pyplot(fig)
+
+    # Tampilkan data dalam format teks
+    for day_type, percentage in day_type_percent.items():
+        st.write(f"- **{day_type}**: {percentage:.1f}%")
+else:
+    st.warning('Silakan pilih minimal satu jenis hari untuk ditampilkan.')
 
 # ========================
 # Kesimpulan
