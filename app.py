@@ -11,7 +11,7 @@ data_day = pd.read_csv(data_url)
 # Konversi kolom 'tanggal' ke datetime
 data_day['tanggal'] = pd.to_datetime(data_day['tanggal'])
 
-# Konversi kolom kategorikal sesuai isi sebenarnya
+# Konversi kolom kategorikal
 data_day['workingday'] = data_day['workingday'].map({'Ya': 1, 'Tidak': 0})
 data_day['holiday'] = data_day['holiday'].map({'Ya': 1, 'Tidak': 0})
 data_day['day_type'] = data_day['day_type'].map({1: 'Hari Libur', 0: 'Hari Kerja'})  # sesuai datamu
@@ -23,7 +23,7 @@ data_day['day_type'] = data_day['day_type'].map({1: 'Hari Libur', 0: 'Hari Kerja
 
 st.title('📊 Analisis Penyewaan Sepeda Harian (Tanpa Filter)')
 
-# Menampilkan data dalam bentuk tabel
+# Menampilkan data
 with st.expander("🔍 Lihat Data"):
     st.dataframe(data_day)
 
@@ -40,7 +40,7 @@ interpretasi_korelasi = (
     "Tidak ada hubungan linear yang signifikan antara suhu dan jumlah total penyewaan sepeda."
 )
 
-# Membuat scatter chart untuk korelasi
+# scatter chart untuk korelasi
 scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
     x=alt.X('temp', title='Suhu (°C)'),
     y=alt.Y('total_count', title='Jumlah Penyewaan'),
@@ -67,11 +67,11 @@ st.subheader("🌦️ Tren Penyewaan Sepeda Berdasarkan Musim")
 musim_unik = data_day['musim'].unique().tolist()
 musim_dipilih = st.multiselect("Pilih musim untuk ditampilkan:", musim_unik, default=musim_unik)
 
-# Filter data berdasarkan musim yang dipilih
+# Filter data berdasarkan musim
 if musim_dipilih:
     seasonal_data = data_day[data_day['musim'].isin(musim_dipilih)]
     
-    # Hitung rata-rata penyewaan per musim
+    # Rata-rata penyewaan per musim
     seasonal_rentals = (
         seasonal_data.groupby('musim')['total_count']
         .mean()
@@ -87,13 +87,11 @@ if musim_dipilih:
     ax.set_ylabel('Rata-rata Jumlah Penyewaan')
     ax.grid(axis='y', linestyle='--', alpha=0.5)
 
-    # Tambahkan label di atas bar
     for i, v in enumerate(seasonal_rentals.values):
         ax.text(i, v + 10, f'{v:.0f}', ha='center', fontweight='bold')
     
     st.pyplot(fig)
 
-    # Tampilkan info di bawah grafik
     for musim, jumlah in seasonal_rentals.items():
         st.write(f"- **{musim}**: Rata-rata **{jumlah:.0f} penyewaan/hari**")
 else:
@@ -101,11 +99,11 @@ else:
 
 st.subheader("📅 Penyewaan Sepeda Berdasarkan Hari dalam Seminggu")
 
-# Checkbox filter hari
+# Checkbox 
 hari_unik = data_day['weekday'].unique().tolist()
 hari_dipilih = st.multiselect("Pilih hari untuk ditampilkan:", hari_unik, default=hari_unik)
 
-# Filter dan analisis
+# Filter 
 if hari_dipilih:
     filtered_hari = data_day[data_day['weekday'].isin(hari_dipilih)]
     
@@ -131,7 +129,7 @@ if hari_dipilih:
 
     st.pyplot(fig)
 
-    # Tampilkan teks informatif
+    # teks informatif
     for hari, jumlah in avg_rentals_by_weekday.items():
         st.write(f"- **{hari}**: Rata-rata **{jumlah:.0f} penyewaan/hari**")
 else:
@@ -143,18 +141,18 @@ else:
 
 st.subheader('🚲 Penyewaan Sepeda: Hari Kerja vs Hari Libur')
 
-# Checkbox interaktif
+# Checkbox 
 show_workingday = st.checkbox('Tampilkan Hari Kerja', value=True)
 show_holiday = st.checkbox('Tampilkan Hari Libur', value=True)
 
-# Filter pilihan
+# Filter 
 selected_days = []
 if show_holiday:
     selected_days.append('Hari Libur')
 if show_workingday:
     selected_days.append('Hari Kerja')
 
-# Jika ada pilihan
+# pilihan
 if selected_days:
     # Filter data
     filtered_data = data_day[data_day['day_type'].isin(selected_days)]
