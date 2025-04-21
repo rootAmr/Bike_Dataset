@@ -5,25 +5,21 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load data
-data_url = "https://raw.githubusercontent.com/rootAmr/Bike_Dataset/refs/heads/main/data_day_clean.csv"
+data_url = "https://raw.githubusercontent.com/rootAmr/Bike_Dataset/refs/heads/main/data_day_CLEAND.csv"
 data_day = pd.read_csv(data_url)
-
-# Sidebar untuk filter
-st.sidebar.header('Filter Data')
-selected_year = st.sidebar.multiselect('Pilih Tahun', sorted(data_day['tahun'].unique()), default=data_day['tahun'].unique())
-selected_season = st.sidebar.multiselect('Pilih Musim', sorted(data_day['musim'].unique()), default=data_day['musim'].unique())
-
-# Filter berdasarkan input
-filtered_data = data_day[(data_day['tahun'].isin(selected_year)) & (data_day['musim'].isin(selected_season))]
 
 # Konversi kolom 'tanggal' ke datetime
 data_day['tanggal'] = pd.to_datetime(data_day['tanggal'])
 
-# Kategorisasi hari
-def kategorikan_hari(hari):
-    return 'Akhir Pekan/Libur' if hari in ['Sabtu', 'Minggu'] else 'Hari Kerja'
+# Konversi kolom kategorikal sesuai isi sebenarnya
+data_day['workingday'] = data_day['workingday'].map({'Ya': 1, 'Tidak': 0})
+data_day['holiday'] = data_day['holiday'].map({'Ya': 1, 'Tidak': 0})
+data_day['day_type'] = data_day['day_type'].map({1: 'Hari Libur', 0: 'Hari Kerja'})  # sesuai datamu
 
-data_day['jenis_hari'] = data_day['weekday'].apply(kategorikan_hari)
+# Pastikan kolom kategorikal
+kategori_kolom = ['musim', 'bulan', 'holiday', 'weekday', 'cuaca', 'day_type']
+for col in kategori_kolom:
+    data_day[col] = data_day[col].astype('category')
 
 # ======================
 # 🔎 Analisis & Visualisasi
@@ -66,31 +62,31 @@ st.altair_chart(scatter_chart, use_container_width=True)
 st.success(interpretasi_korelasi)
 
 # ========================
-# Persentase Penyewaan
+# Persentase Penyewaan Hari Kerja vs Hari Libur
 # ========================
 
-# Section 2: Persentase Penyewaan Hari Kerja vs Libur (sudah kamu buat)
-filtered_data['day_type'] = filtered_data['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
-day_type_rentals = filtered_data.groupby('day_type')['total_count'].sum().reindex(['Hari Kerja', 'Hari Libur'], fill_value=0)
+st.subheader('🚲 Persentase Penyewaan: Hari Kerja vs Hari Libur')
+
+# Hitung jumlah penyewaan per jenis hari
+day_type_rentals = data_day.groupby('day_type')['total_count'].sum().reindex(['Hari Kerja', 'Hari Libur'], fill_value=0)
 day_type_percent = (day_type_rentals / day_type_rentals.sum()) * 100
 
-st.subheader('🚲 Persentase Penyewaan: Hari Kerja vs Hari Libur')
+# Visualisasi bar chart
 fig, ax = plt.subplots()
 bars = ax.bar(day_type_percent.index, day_type_percent, color=['skyblue', 'salmon'])
+
+# Label persen
 for bar in bars:
     height = bar.get_height()
     ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%', ha='center', fontweight='bold')
-ax.set_ylim(0, 100)
-ax.set_ylabel('Persentase (%)')
-st.pyplot(fig)
 
-# Menambahkan elemen visual
-ax.set_title('Presentase Penyewaan Sepeda: Hari Kerja vs Hari Libur', fontsize=14, fontweight='bold')
-ax.set_ylabel('Persentase (%)')
+# Tambahan pengaturan visual
 ax.set_ylim(0, 100)
+ax.set_ylabel('Persentase (%)')
+ax.set_title('Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur', fontsize=14, fontweight='bold')
 ax.grid(axis='y', linestyle='--', alpha=0.5)
 
-# Menampilkan chart di Streamlit
+# Tampilkan chart
 st.pyplot(fig)
 
 # Menampilkan data dalam format teks
