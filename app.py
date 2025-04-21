@@ -8,6 +8,14 @@ import matplotlib.pyplot as plt
 data_url = "https://raw.githubusercontent.com/rootAmr/Bike_Dataset/refs/heads/main/data_day_clean.csv"
 data_day = pd.read_csv(data_url)
 
+# Sidebar untuk filter
+st.sidebar.header('Filter Data')
+selected_year = st.sidebar.multiselect('Pilih Tahun', sorted(data_day['tahun'].unique()), default=data_day['tahun'].unique())
+selected_season = st.sidebar.multiselect('Pilih Musim', sorted(data_day['musim'].unique()), default=data_day['musim'].unique())
+
+# Filter berdasarkan input
+filtered_data = data_day[(data_day['tahun'].isin(selected_year)) & (data_day['musim'].isin(selected_season))]
+
 # Konversi kolom 'tanggal' ke datetime
 data_day['tanggal'] = pd.to_datetime(data_day['tanggal'])
 
