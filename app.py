@@ -99,6 +99,44 @@ if musim_dipilih:
 else:
     st.warning("Pilih minimal satu musim untuk melihat grafik.")
 
+st.subheader("📅 Penyewaan Sepeda Berdasarkan Hari dalam Seminggu")
+
+# Checkbox filter hari
+hari_unik = data_day['weekday'].unique().tolist()
+hari_dipilih = st.multiselect("Pilih hari untuk ditampilkan:", hari_unik, default=hari_unik)
+
+# Filter dan analisis
+if hari_dipilih:
+    filtered_hari = data_day[data_day['weekday'].isin(hari_dipilih)]
+    
+    avg_rentals_by_weekday = (
+        filtered_hari.groupby('weekday')['total_count']
+        .mean()
+        .reindex(hari_unik)  # agar urutan tetap
+        .dropna()
+    )
+
+    # Visualisasi
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(x=avg_rentals_by_weekday.index, y=avg_rentals_by_weekday.values, palette="muted", ax=ax)
+    ax.set_title('Rata-rata Penyewaan Sepeda per Hari dalam Seminggu', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Hari')
+    ax.set_ylabel('Jumlah Penyewaan Rata-rata')
+    ax.set_xticklabels(avg_rentals_by_weekday.index, rotation=45)
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+
+    # Label nilai
+    for i, v in enumerate(avg_rentals_by_weekday.values):
+        ax.text(i, v + 10, f'{v:.0f}', ha='center', fontweight='bold')
+
+    st.pyplot(fig)
+
+    # Tampilkan teks informatif
+    for hari, jumlah in avg_rentals_by_weekday.items():
+        st.write(f"- **{hari}**: Rata-rata **{jumlah:.0f} penyewaan/hari**")
+else:
+    st.warning("Pilih minimal satu hari untuk melihat grafik.")
+
 # ========================
 # Persentase Penyewaan Hari Kerja vs Hari Libur
 # ========================
