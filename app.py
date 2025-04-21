@@ -16,6 +16,47 @@ data_day['workingday'] = data_day['workingday'].map({'Ya': 1, 'Tidak': 0})
 data_day['holiday'] = data_day['holiday'].map({'Ya': 1, 'Tidak': 0})
 data_day['day_type'] = data_day['day_type'].map({1: 'Hari Libur', 0: 'Hari Kerja'})  # sesuai datamu
 
+
+# ======================
+# 🔎 Analisis & Visualisasi
+# ======================
+
+st.title('📊 Analisis Penyewaan Sepeda Harian (Tanpa Filter)')
+
+# Menampilkan data dalam bentuk tabel
+with st.expander("🔍 Lihat Data"):
+    st.dataframe(data_day)
+
+# Korelasi suhu dan penyewaan
+st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda')
+
+# Menghitung korelasi antara suhu dan jumlah penyewaan
+korelasi = data_day['temp'].corr(data_day['total_count'])
+
+# Interpretasi korelasi
+interpretasi_korelasi = (
+    "Terdapat korelasi positif antara suhu dan jumlah total penyewaan sepeda." if korelasi > 0 else
+    "Terdapat korelasi negatif antara suhu dan jumlah total penyewaan sepeda." if korelasi < 0 else
+    "Tidak ada hubungan linear yang signifikan antara suhu dan jumlah total penyewaan sepeda."
+)
+
+# Membuat scatter chart untuk korelasi
+scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
+    x=alt.X('temp', title='Suhu (°C)'),
+    y=alt.Y('total_count', title='Jumlah Penyewaan'),
+    tooltip=['temp', 'total_count']
+).properties(
+    title=f'Korelasi: {korelasi:.2f}',
+    width=600,
+    height=400
+)
+
+# Menampilkan chart
+st.altair_chart(scatter_chart, use_container_width=True)
+
+# Menampilkan interpretasi korelasi
+st.success(interpretasi_korelasi)
+
 # kolom kategorikal
 kategori_kolom = ['musim', 'bulan', 'holiday', 'weekday', 'cuaca', 'day_type']
 for col in kategori_kolom:
@@ -57,46 +98,6 @@ if musim_dipilih:
         st.write(f"- **{musim}**: Rata-rata **{jumlah:.0f} penyewaan/hari**")
 else:
     st.warning("Pilih minimal satu musim untuk melihat grafik.")
-
-# ======================
-# 🔎 Analisis & Visualisasi
-# ======================
-
-st.title('📊 Analisis Penyewaan Sepeda Harian (Tanpa Filter)')
-
-# Menampilkan data dalam bentuk tabel
-with st.expander("🔍 Lihat Data"):
-    st.dataframe(data_day)
-
-# Korelasi suhu dan penyewaan
-st.header('🌡️ Korelasi antara Suhu dan Jumlah Penyewaan Sepeda')
-
-# Menghitung korelasi antara suhu dan jumlah penyewaan
-korelasi = data_day['temp'].corr(data_day['total_count'])
-
-# Interpretasi korelasi
-interpretasi_korelasi = (
-    "Terdapat korelasi positif antara suhu dan jumlah total penyewaan sepeda." if korelasi > 0 else
-    "Terdapat korelasi negatif antara suhu dan jumlah total penyewaan sepeda." if korelasi < 0 else
-    "Tidak ada hubungan linear yang signifikan antara suhu dan jumlah total penyewaan sepeda."
-)
-
-# Membuat scatter chart untuk korelasi
-scatter_chart = alt.Chart(data_day).mark_circle(color='orange').encode(
-    x=alt.X('temp', title='Suhu (°C)'),
-    y=alt.Y('total_count', title='Jumlah Penyewaan'),
-    tooltip=['temp', 'total_count']
-).properties(
-    title=f'Korelasi: {korelasi:.2f}',
-    width=600,
-    height=400
-)
-
-# Menampilkan chart
-st.altair_chart(scatter_chart, use_container_width=True)
-
-# Menampilkan interpretasi korelasi
-st.success(interpretasi_korelasi)
 
 # ========================
 # Persentase Penyewaan Hari Kerja vs Hari Libur
