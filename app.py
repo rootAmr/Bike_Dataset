@@ -101,7 +101,5 @@ st.header('📝 Kesimpulan')
 
 # Menyusun kesimpulan analisis
 st.markdown(f"""
-- 📅 Analisis dilakukan pada seluruh rentang data yang tersedia.
-- 📈 **Suhu** menunjukkan hubungan {'positif' if korelasi > 0 else 'negatif' if korelasi < 0 else 'tidak signifikan'} dengan jumlah penyewaan sepeda.
-- 🔍 Analisis ini memberikan gambaran umum pola penyewaan sepeda berdasarkan hari dan suhu.
-""")
+- Terdapat hubungan positif antara suhu dan jumlah total sepeda, informasi ini bisa berguna untuk pengelola sistem penyewaan sepeda. Mereka dapat mengoptimalkan strategi pemasaran atau menyesuaikan inventaris sepeda berdasarkan perubahan musim. Hal ini memberikan peluang bagi pengelola sistem penyewaan sepeda untuk mengoptimalkan kampanye pemasaran musiman, seperti menawarkan promosi atau diskon pada musim panas, serta menyesuaikan jumlah sepeda yang disediakan di lokasi-lokasi tertentu.
+- Terdapat perbedaan yang signifikan dalam pola penyewaan sepeda antara hari kerja dan hari libur. Mayoritas penyewaan terjadi pada hari kerja, sedangkan penyewaan pada hari libur merupakan sebagian kecil dari total penyewaan sepeda. Ini mungkin disebabkan oleh aktivitas bersepeda yang lebih tinggi di hari kerja, saat orang-orang mungkin menggunakan sepeda untuk transportasi sehari-hari.pengelola dapat memperkenalkan sepeda sebagai aktivitas rekreasi dengan menawarkan promosi akhir pekan atau bekerja sama dengan acara besar.""")
