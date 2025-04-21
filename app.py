@@ -61,30 +61,20 @@ st.success(interpretasi_korelasi)
 # Persentase Penyewaan
 # ========================
 
-# Kategorisasi berdasarkan 'workingday' (1 = Hari Kerja, 0 = Hari Libur)
-data_day['day_type'] = data_day['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
-
-# Hitung total penyewaan per jenis hari
-day_type_rentals = data_day.groupby('day_type')['total_count'].sum()
-
-# Pastikan semua kategori ada dalam perhitungan
-day_type_rentals = day_type_rentals.reindex(['Hari Kerja', 'Hari Libur'], fill_value=0)
-
-# Hitung persentase penyewaan per jenis hari
+# Section 2: Persentase Penyewaan Hari Kerja vs Libur (sudah kamu buat)
+filtered_data['day_type'] = filtered_data['workingday'].apply(lambda x: 'Hari Kerja' if x == 1 else 'Hari Libur')
+day_type_rentals = filtered_data.groupby('day_type')['total_count'].sum().reindex(['Hari Kerja', 'Hari Libur'], fill_value=0)
 day_type_percent = (day_type_rentals / day_type_rentals.sum()) * 100
 
-# Subheader
-st.subheader('🚲 Persentase Penyewaan Sepeda: Hari Kerja vs Hari Libur')
-
-# Membuat bar plot untuk persentase
-fig, ax = plt.subplots(figsize=(8, 6))
+st.subheader('🚲 Persentase Penyewaan: Hari Kerja vs Hari Libur')
+fig, ax = plt.subplots()
 bars = ax.bar(day_type_percent.index, day_type_percent, color=['skyblue', 'salmon'])
-
-# Menambahkan label persentase di atas batang
 for bar in bars:
     height = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%',
-            ha='center', va='bottom', fontsize=10, fontweight='bold')
+    ax.text(bar.get_x() + bar.get_width()/2, height + 1, f'{height:.1f}%', ha='center', fontweight='bold')
+ax.set_ylim(0, 100)
+ax.set_ylabel('Persentase (%)')
+st.pyplot(fig)
 
 # Menambahkan elemen visual
 ax.set_title('Presentase Penyewaan Sepeda: Hari Kerja vs Hari Libur', fontsize=14, fontweight='bold')
